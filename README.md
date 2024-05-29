@@ -1,15 +1,17 @@
 # Docker Tutorial
 > Chúng ta sẽ đi tìm hiểu docker kỹ nhất có thể
 # Mục lục
-## [I. Giới thiệu về docker](#I-giới-thiệu-về-docker)
-## [II. Cài đặt](#ii-cài-đặt)
-## III. Các câu lệnh
+- [I. Giới thiệu về docker](#i-giới-thiệu-về-docker)
+- [II. Cài đặt](#ii-cài-đặt)
+- [III. Dockerfile](#iii-dockerfile)
+
 
 ## I. Giới thiệu về docker
 ### 1. Những vấn đề gặp phải khi triển khai hệ thống
 Khi triển khai hệ thống chúng ta sẽ phải cài đặt môi trường trên từng máy. Mỗi máy nhìn chung sẽ có những thư viện ở phiên bản khác nhau. Nếu chúng ta có một hệ thống đã được code hoàn chỉnh trên 1 máy và muốn triển khai trên các máy khác thì cần phải đi cấu hình thủ công sao cho các thư viện phù hợp với hệ thống. Việc cấu hình này là rất vất vả và có thể lỗi do không tương thích môi trường. Từ đó, chúng ta cần một công cụ để cho việc cấu hình này trở nên đơn giản hơn. 
 ### 2. Docker là gì?
 ![logo](./images/tutorial/logo.png)
+
 Docker là một dự án mã nguồn mở giúp tự động triển khai các ứng dụng Linux và Windows vào trong các container ảo hóa. Docker cung cấp một lớp trừu tượng và tự động ảo hóa dựa trên Linux. [wiki](https://vi.wikipedia.org/wiki/Docker_(ph%E1%BA%A7n_m%E1%BB%81m))
 
 Hiểu một cách đơn giản, Docker sẽ tạo ra một môi trường cô lập (isolated environment), trong môi trường đó chúng ta có thể cài các thư viện, các dependencies, ... mà không ảnh hưởng tới đến môi trường bên ngoài.
@@ -21,13 +23,14 @@ Hiểu một cách đơn giản, Docker sẽ tạo ra một môi trường cô l
 ### c. Các khái niệm
 Kiến trúc của Docker được thể hiện như sau:
 ![architecture](./images/tutorial/architecture.png)
+
 Nhìn vào kiến trúc, có một vài khái niệm chúng ta cần nắm được:
 - `Client`: là giao diện dòng lệnh chính là nơi chúng ta thao tác với docker thông qua command (câu lệnh) ở trong `terminal`/`shell`. `Client` sẽ cho phép người dùng gửi các lệnh và nhận phản hồi từ `docker daemon` để thực hiên các thao tác quản lý.
 - `Docker daemon`: là một tiến trình chạy trên hệ điều hành và nó quản lý docker. Nó lắng nghe các yêu cầu Docker API từ `client` và quản lý các Docker object. `Docker daemon` cũng có thể giao tiếp với các `Docker daemon` khác để quản lý các dịch vụ.
 - `Registry`: là một hệ thống lưu trữ và phân phối các `Docker images`. Docker registry cho phép lưu trữ và phân phối các images. [Docker Hub](https://hub.docker.com/) là registry mặc định được Docker sử dụng, nhưng chúng ta cũng có thể thiết lập và sử dụng registry riêng của mình.
-- `Docker images`:
-- `Docker container`:
-- `Docker network`:
+- `Docker images`: một tệp bất biến (không thể thay đổi) chứa mã nguồn, thư viện, phụ thuộc và các công cụ cần thiết để chạy một ứng dụng để chạy.
+- `Docker container`: Là run-time environment mà ở đó ứng dụng có thể chạy độc lập, `container` là một `image` đang chạy. `Image` có thể tồn tại mà không cần container, trong khi `container` chạy thì cần có `image` đã tồn tại. Vì vậy, container phụ thuộc vào `image` và sử dụng nó để tạo ra run-time environment và chạy ứng dụng trên đó.
+- `Docker network`: Các container chạy trong môi trường cô lập, vì vậy muốn kết nối chúng cần nối chúng vào một mạng chung. Giả sử khi chúng ta có 3 container đang chạy và muốn chúng giao tiếp với nhau thì cần ghép chúng vào một mạng (brigde), sau đó container này có thể gọi container khác thông quan `container_name:port`. Trong đó, `container_name` là tên của container và `port` là cổng mà chúng ta publish ra bên ngoài (Không phải cổng expose).
 ## II. Cài đặt
 ### 1. WSL
 Docker được chạy trên hệ điều hành `Linux`, vì vậy khuyến khích nên thực hành trên `linux`. Nếu bạn đang sử dụng hệ điều hành window mà không muốn dùng các phần mềm ảo hóa như VMWare hoặc Virtual box thì có một sự lựa chọn tuyệt vời đó là sử dụng subsystem `WSL`. Nó là một hệ thống Linux được xây dựng bên trong window mà không cần máy ảo riêng biệt, vì vậy hiệu năng cũng như tốc độ của nó sẽ rất ổn định. Hơn nữa, khi dùng `WSL` chúng ta cũng sẽ tránh được các lỗi liên quan đến bộ nhớ, các phần mềm ảo hóa chúng ta thường gặp một vài trường hợp mà ổ đĩa vẫn còn nhưng máy ảo lại báo là hết dung lượng không cho ghi. <br>
@@ -147,7 +150,7 @@ Vì vậy mỗi khi thực hiện câu lệnh liên quan đến docker chúng ta
     sudo chown "$USER":"$USER" /home/"$USER"/.docker -R
     sudo chmod g+rwx "$HOME/.docker" -R
     ```
-## IV. Dockerfile
+## III. Dockerfile
 `Dockerfile` là file config cho Docker để build ra image. Nó dùng một image cơ bản để xây dựng lớp image ban đầu. Một số image cơ bản: python, unbutu and alpine. Sau đó nếu có các lớp bổ sung thì nó được xếp chồng lên lớp cơ bản. Cuối cùng một lớp mỏng có thể được xếp chồng lên nhau trên các lớp khác trước đó. Nếu không cung cấp tên file, Docker engine sẽ build ra image theo đúng tên `Dockerfile` trong thư mục được chỉ định. <br>
 Cấu trúc của `Dockerfile` sẽ có dạng như sau:
 ```Dockerfile
@@ -171,33 +174,63 @@ CMD
 
 ENTRYPOINT
 ```
-Các config:
+Các `instruction`:
 - `ARG`: Là biến build-time (chỉ hoạt động trong quá trình build image). Các biến sẽ được khả dụng từ khi khai báo trong `ARG` cho đến khi image được build xong và sẽ không thể truy cập khi container chạy. Các biến này phải được cung cấp, tức là có thể gán giá trị cho biến ngay khi khai báo hoặc truyền thông qua command `docker build`, nếu không sẽ báo lỗi. Ví dụ ta có biến như sau
     ```Dockerfile
-    ARG my_value=5
     FROM alpine
-    ARG my_value
+    ARG my_value=5
     RUN echo "my_value is ${my_value}"
     ```
     ```cmd
     docker build -t arg-test .
     ```
+    Ta cũng có thể truyền giá trị cho các biến của `ARG`
+    ```Dockerfile
+    PROGERSS_NO_TRUNC=1 docker build --build-arg my_value=1234 --progress plain --no-cache -t arg-test .
+    ```
     Output:
-    ```sh
-    [+] Building 1.2s (6/6) FINISHED                                                                         docker:default
-    => [internal] load build definition from Dockerfile
-    => => transferring dockerfile: 270B
-    => [internal] load metadata for docker.io/library/alpine:latest
-    => [internal] load .dockerignore
-    => => transferring context: 2B
-    => [1/2] FROM docker.io/library alpine:latest@sha256:77726ef6b57ddf65bb551896826ec38bc3e53f75cdde31354fbffb4f252  
-    => CACHED [2/2] RUN echo "my_value is 5" <-------------here
-    => exporting to image
-    => => exporting layers
-    => => writing image sha256:a69b28a0047cf276c23c97a76d787960bb075688085ade48ecb21efdc2d438b9                       
-    => => naming to docker.io/library/arg
+    ```
+    #0 building with "default" instance using docker driver
+
+    #1 [internal] load build definition from Dockerfile
+    #1 transferring dockerfile: 177B done
+    #1 DONE 0.0s
+
+    #2 [internal] load metadata for docker.io/library/alpine:latest
+    #2 ...
+
+    #3 [auth] library/alpine:pull token for registry-1.docker.io
+    #3 DONE 0.0s
+
+    #2 [internal] load metadata for docker.io/library/alpine:latest
+    #2 DONE 3.2s
+
+    #4 [internal] load .dockerignore
+    #4 transferring context: 2B done
+    #4 DONE 0.0s
+
+    #5 [1/2] FROM docker.io/library/alpine:latest@sha256:77726ef6b57ddf65bb551896826ec38bc3e53f75cdde31354fbffb4f25238ebd
+    #5 CACHED
+
+    #6 [2/2] RUN echo 1234
+    #6 0.359 1234 <------------------------- HERE
+    #6 DONE 0.5s
+
+    #7 exporting to image
+    #7 exporting layers 0.1s done
+    #7 writing image sha256:389968d37935957301a11b6a59e241e6bd095b632bc3d0604dd9825da09acbdd done
+    #7 naming to docker.io/library/hehe 0.0s done
+    #7 DONE 0.1s
+    ```
+    > Thông thường sẽ dùng cho các biến `built-in` của docker. Ví dụ dùng để tăng tốc độ build time
+    ```Dockerfile
+    ARG DOCKER_BUILDKIT=1
     ```
 - `FROM`: Chỉ định các images gốc: python, ubuntu, alpine. Các images sẽ được ưu tiên tìm ở local trước. Nếu không có, docker sẽ tự động pull về từ official registry (Docker hub). Trong đó, để tối ưu về bộ nhớ thì những images `alpine` sẽ có kích thước nhỏ và hiệu năng tốt. Ví dụ: `node:16-alpine`, `python:3.10-alpine` ...
+    ```Dockerfile
+    FROM python:3.10
+    FROM node:16-alpine
+    ```
 - `LABEL`: Giúp cung cấp thông tin metadata về images. Những thông tin này có thể được xem thông qua `docker inspect`
     ```Dockerfile
     LABEL maintainer="example@example.com" \
@@ -216,8 +249,55 @@ Các config:
     LABEL usage="docker run -d -p 80:80 my-web-app"
     LABEL build_date="2024-05-28"
     ```
-- `ENV`: Dùng để chỉ định biến môi trường. Các biến này sẽ được ứng dụng lấy ra khi chạy hệ thống.
+
+- `ENV`: Dùng để chỉ định biến môi trường. Các biến này sẽ được ứng dụng lấy ra khi chạy hệ thống cả trong quá trình build và trong quá trình chạy ở container. Khác với `ARG`, các biến `ENV` có thể không cần cung cấp ngay lập tức nghĩa là có thể bỏ trống. Và trong quá trình **build** không thể truyền các biến `ENV` từ câu lệnh. Mà chỉ có thể truyền khi **run**. Ví dụ:
+    > Note: Biến `ENV` không thể truyền khi build.
     ```Dockerfile
     ENV APP_ENV=production \
         MONGO_URL=http://localhost:27017
+    ```
+    Chúng ta có thể cung cấp biến môi trường `ENV` theo nhiều cách
+    ```Dockerfile
+    FROM alpine
+    ENV e_version=2
+    RUN echo "e_version is ${e_version}"
+    ```
+    ```sh
+    docker build -t env-test .
+    ```
+    - Lấy từ giá trị của `ARG`
+    ```Dockerfile
+    # no default value
+    ENV hey
+    # a default value
+    ENV foo /bar
+    # or ENV foo=/bar
+
+    # ENV values can be used during the build
+    ADD . $foo
+    # or ADD . ${foo}
+    # translates to: ADD . /bar
+
+    ```
+    - Cung cấp bằng cách truyền giá trị sử dụng cờ `-e`
+    ```sh
+    docker run --rm -e e_version=200 env-test --name=env-container sleep infinity
+    ```
+    > Vì container này chạy không có thời gian chờ nên nếu chúng ta muốn xem có những gì bên trong container thì cần cho container này sleep bằng `sleep infinity`.
+    Sau đó chúng ta dùng câu lệnh `docker inspect env-container` để xem biến môi trường `ENV` đã thay đổi hay chưa. (Mở một tab khác)
+    ```sh
+    "Env": [
+        "e_version=200",
+        "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    ],
+    "Cmd": [
+        "sleep",
+        "infinity"
+    ],
+    ```
+    Nhận thấy, biến môi trường `e_version` được cung cấp ban đầu là 2 nhưng sau khi chúng ta truyền thông qua command thì đã thành 200. Vậy, biến `ENV` sẽ bị ghi đè giá trị mới hơn.
+    - Chúng ta cũng có thể dùng 1 file để truyền giá trị cho biến môi trường.
+    ```sh
+    echo "e_version=1999" > env_file_test
+    docker run --rm -e --env-file=env_file_test --name=env-container env-test sleep infinity 
     ```
