@@ -301,3 +301,79 @@ Các `instruction`:
     echo "e_version=1999" > env_file_test
     docker run --rm -e --env-file=env_file_test --name=env-container env-test sleep infinity 
     ```
+- `WORKDIR`: Chỉ định thư mục làm việc. Nếu không có thì mặc định sẽ là `/`. `WORKDIR` là nơi mà các câu lệnh như `CMD`, `ENTRYPOINT`, `COPY`, `ADD` hoạt động (được các câu lệnh này coi là root).
+    `WORKDIR` được chỉ định nếu không tồn tại sẽ được tạo mới (bất kể là ở phần dưới có sử dụng hay không). Chúng ta có thể sử dụng nhiều `WORKDIR`
+    ```Dockerfile
+    WORKDIR /a
+    WORKDIR b
+    WORKDIR c
+    RUN pwd
+    ```
+    > `/a/b/c`
+    ```Dockerfile
+    WORKDIR /app
+    ```
+    - Để tránh các phiền toái không cần thiết, **best practice** là luôn chỉ định `WORKDIR`.
+- `RUN`: Chạy các lệnh trong container. Các lệnh này sẽ được chạy trong một layer mới. Vì vậy, các lệnh `RUN` được gộp lại sẽ chỉ có 1 layer.
+    ```Dockerfile
+    # Shell form:
+    RUN [OPTIONS] <command> ...
+    # Exec form:
+    RUN [OPTIONS] [ "<command>", ...]
+    ```
+    Ví dụ: Giả sử chúng ta có 1 app và phải viết `Dockerfile` cho app đó. `Dockerfile` v1 có dạng
+    ```Dockerfile
+    RUN apt-get update
+    RUN apt-get install -y curl
+    ```
+    Tuy nhiên, chúng ta lại cần thêm `nginx` nữa nên cần build lại image với file như sau:
+    ```Dockerfile
+    RUN apt-get update
+    RUN apt-get install -y curl nginx
+    ```
+    Ở ví dụ trên `RUN apt-get update` là 1 layer. Docker nhận thấy là layer này ở các lần build khác nhau không thay đổi nên nó sẽ được giữ lại và không chạy cho lần sau nữa. Vì vậy sẽ có nguy cơ tiềm ẩn rằng `curl` và `nginx` được cài sau đó sẽ có thể là 1 `phiên bản cũ` do apt chưa được cập nhật (Cơ chế caching). Vì vậy
+    > `Always combine RUN apt-get update with apt-get install in the same RUN statement. ` (Luôn luôn chạy RUN apt-get update với apt-get install trong cùng 1 câu lệnh RUN)
+- `COPY`: Sao chép các file từ host vào container.
+    > Ví dụ copy toàn bộ thư mục đang ở host hiện tại `./` vào thư mục `/app` trong `WORKDIR`.
+    ```Dockerfile
+    COPY . /app
+    ```
+- `ADD`: Sao chép các file từ host vào container.
+    > Ví dụ add toàn bộ thư mục đang ở host hiện tại `./` vào thư mục `/app` trong `WORKDIR`.
+    ```Dockerfile
+    ADD . /app
+    ```
+- `CMD`: Chạy các lệnh trong container. Các lệnh này sẽ được chạy trong một layer mới. Vì vậy, các lệnh `CMD` được gộp lại sẽ chỉ có 1 layer.
+- `ENTRYPOINT`: Chạy các lệnh trong container. Các lệnh này sẽ được chạy trong một layer mới. Vì vậy, các lệnh `ENTRYPOINT` được gộp lại sẽ chỉ có 1 layer.
+- `EXPOSE`: Expose cổng để có thể giao tiếp với host.
+    ```Dockerfile
+    EXPOSE 80
+    ```
+- `VOLUME`: Tạo ra một volume để lưu trữ dữ liệu.
+    ```Dockerfile
+    VOLUME /app
+    ```
+- `USER`: Chỉ định người dùng để chạy container.
+    ```Dockerfile
+    USER user
+    ```
+- `ONBUILD`: Chỉ định các lệnh sẽ được chạy khi image này được sử dụng làm base image cho một image khác.
+    ```Dockerfile
+    ONBUILD ADD . /app
+    ```
+- `STOPSIGNAL`: Chỉ định tín hiệu dừng container.
+    ```Dockerfile
+    STOPSIGNAL signal
+    ```
+- `HEALTHCHECK`: Chỉ định các lệnh để kiểm tra trạng thái của container.
+    ```Dockerfile
+    HEALTHCHECK --interval=5m --timeout=30s \
+      CMD curl -f http://localhost:80/ || exit 1
+    ```
+- `SHELL`: Chỉ định shell để chạy các lệnh.
+    ```Dockerfile
+    SHELL ["powershell", "-Command"]
+    ```
+    
+    
+    
